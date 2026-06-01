@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import AuthForm from "../components/AuthForm";
 
 const heroVideo = "https://framerusercontent.com/assets/iWlVr4qV5BuFxjhc6g7QcPK5o.mp4";
 
@@ -103,21 +104,30 @@ function Logo() {
   );
 }
 
-import Link from "next/link";
-
 function Button({
   children,
+  href = "#",
+  onClick,
   variant = "primary",
-  href = "/",
 }: {
   children: ReactNode;
-  variant?: "primary" | "ghost";
   href?: string;
+  onClick?: () => void;
+  variant?: "primary" | "ghost";
 }) {
   return (
-    <Link href={href} className={`button ${variant}`}>
+    <a
+      className={`button ${variant}`}
+      href={href}
+      onClick={(event) => {
+        if (onClick) {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+    >
       {children}
-    </Link>
+    </a>
   );
 }
 
@@ -210,41 +220,42 @@ function LineIcon({ type }: { type: string }) {
 
 export default function Home() {
   const manifestoRef = useRef<HTMLElement>(null);
+  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
 
- useEffect(() => {
-  gsap.registerPlugin(ScrollTrigger);
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
 
-  const context = gsap.context(() => {
-    const words = gsap.utils.toArray<HTMLElement>(".manifesto-word");
+    const context = gsap.context(() => {
+      const words = gsap.utils.toArray<HTMLElement>(".manifesto-word");
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: manifestoRef.current,
-        start: "top 20%",
-        end: "+=1200",        
-        scrub: 2,
-        pin: true, 
-      },
-    });
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: manifestoRef.current,
+          start: "top 20%",
+          end: "+=1200",
+          scrub: 2,
+          pin: true,
+        },
+      });
 
-    tl.fromTo(
-      words,
-      {
-        opacity: 0.1,
-        filter: "blur(8px)",
-      },
-      {
-        opacity: 1,
-        filter: "blur(0px)",
-        stagger: 0.1,
-        ease: "none",
-        duration: 1,
-      }
-    );
-  }, manifestoRef);
+      tl.fromTo(
+        words,
+        {
+          opacity: 0.1,
+          filter: "blur(8px)",
+        },
+        {
+          opacity: 1,
+          filter: "blur(0px)",
+          stagger: 0.1,
+          ease: "none",
+          duration: 1,
+        }
+      );
+    }, manifestoRef);
 
-  return () => context.revert();
-}, []);
+    return () => context.revert();
+  }, []);
 
   return (
     <main>
@@ -257,7 +268,7 @@ export default function Home() {
             </a>
           ))}
         </nav>
-        <Button href="/generate">Get started</Button>
+        <Button href="/signup" onClick={() => setAuthMode("signup")}>Get started</Button>
       </header>
 
       <section className="hero">
@@ -269,10 +280,8 @@ export default function Home() {
           </h1>
           <p>Generate clean, responsive frontend code directly from your Figma designs using AI-powered automation.</p>
           <div className="actions">
-            <Button href="/generate">Get started</Button>
-            <Button href="/learn-more" variant="ghost">
-              Learn more
-            </Button>
+            <Button href="/signup" onClick={() => setAuthMode("signup")}>Get started</Button>
+            <Button href="/login" onClick={() => setAuthMode("login")} variant="ghost">Sign in</Button>
           </div>
         </div>
       </section>
@@ -316,7 +325,7 @@ export default function Home() {
               <LineIcon type={card.icon} />
               <h3>{card.title}</h3>
               <p>{card.text}</p>
-              <Button variant="ghost">Get started</Button>
+              <Button href="/signup" onClick={() => setAuthMode("signup")} variant="ghost">Get started</Button>
             </article>
           ))}
         </div>
@@ -329,7 +338,7 @@ export default function Home() {
               <span className="kicker">✧ {section.kicker}</span>
               <h2>{section.title}</h2>
               <p>{section.text}</p>
-              <Button variant="ghost">Get started</Button>
+              <Button href="/signup" onClick={() => setAuthMode("signup")} variant="ghost">Get started</Button>
             </div>
             <Mockup tone={section.tone} image={section.image} />
           </article>
@@ -355,7 +364,7 @@ export default function Home() {
           <div className="case-copy">
             <h3>&quot;Working with this AI platform helped us launch faster and smarter than ever before.&quot;</h3>
             <div className="stats"><b>+50%</b><span>Conversion</span><b>+144%</b><span>ROI</span></div>
-            <Button variant="ghost">Get started</Button>
+            <Button href="/signup" onClick={() => setAuthMode("signup")} variant="ghost">Get started</Button>
           </div>
           <div className="brand-tile blue">Cloud</div>
         </article>
@@ -364,7 +373,7 @@ export default function Home() {
           <div className="case-copy">
             <h3>&quot;We&apos;ve seen a 40% drop in support tickets after integrating their AI assistant.&quot;</h3>
             <div className="stats"><b>+119%</b><span>Conversion</span><b>+208%</b><span>ROI</span></div>
-            <Button variant="ghost">Get started</Button>
+            <Button href="/signup" onClick={() => setAuthMode("signup")} variant="ghost">Get started</Button>
           </div>
         </article>
       </section>
@@ -373,7 +382,7 @@ export default function Home() {
         <div>
           <h2>Seamless integrations with your favorite tools</h2>
           <p>Connect our AI with the apps you already use, including calendars, docs, messaging platforms, and more.</p>
-          <Button variant="ghost">Get started</Button>
+          <Button href="/signup" onClick={() => setAuthMode("signup")} variant="ghost">Get started</Button>
         </div>
         <div className="integration-cloud" aria-hidden="true">
           {Array.from({ length: 18 }).map((_, i) => (
@@ -420,7 +429,7 @@ export default function Home() {
         <h2>Ready to automate everything?</h2>
 
         <div className="actions">
-          <Button>Get started</Button>
+          <Button href="/signup" onClick={() => setAuthMode("signup")}>Get started</Button>
           <Button variant="ghost">Learn more</Button>
         </div>
       </section>
@@ -445,6 +454,20 @@ export default function Home() {
         
         <p className="copyright">Made with ❤️ by Diya & Vishal</p>
       </footer>
+
+      {authMode && (
+        <div className="auth-modal" role="dialog" aria-modal="true" aria-label="Authentication">
+          <button className="auth-modal-backdrop" aria-label="Close authentication" onClick={() => setAuthMode(null)} />
+          <div className="auth-modal-panel">
+            <button className="auth-modal-close" type="button" aria-label="Close" onClick={() => setAuthMode(null)}>
+              x
+            </button>
+            <Suspense fallback={null}>
+              <AuthForm mode={authMode} onModeChange={setAuthMode} />
+            </Suspense>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
